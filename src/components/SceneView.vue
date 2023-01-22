@@ -48,7 +48,7 @@ const renderer = ref(null); // Get ThreeJS render
 const scene = ref(null); // Get ThreeJS scene
 const camera = ref(null); // Get ThreeJS camera
 // Get ThreeJS sphere
-const sphereN = 10;
+const sphereN = 6;
 const sphereProps = ref([]);
 const distance = (sphereA, sphereB) => {
   return Math.sqrt(
@@ -71,7 +71,7 @@ for (let i = 0; i < sphereN; i++) {
   for (let j = 0; j < i; j++) {
     while (
       distance(prop.position, sphereProps.value[j].position) <
-      prop.radius + sphereProps.value[j].radius
+      prop.radius * 2 + sphereProps.value[j].radius * 2 + 0.3
     ) {
       prop.position = {
         x: (Math.random() - 0.9) * 10,
@@ -95,7 +95,7 @@ let aspect = 1; // Camera aspect
 // image texture
 const loader = new three.TextureLoader();
 const imageTexture = loader.load(park, () => {
-  //
+  console.log("texture loaded");
 });
 // Material Props
 let props = {
