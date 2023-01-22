@@ -115,7 +115,7 @@ let props = {
     u_materialColor: { type: "v3", value: new three.Vector3(1.0, 1.0, 1.0) },
     u_backgroundColor: {
       type: "v3",
-      value: new three.Vector3(0.45, 0.45, 0.45),
+      value: new three.Vector3(0.4, 0.45, 0.4),
     },
     u_surfaceThickness: { type: "f", value: 600.0 },
     u_refractiveIndex: { type: "f", value: 1.33 },
@@ -161,6 +161,17 @@ lightFolder
   .add(props.uniforms.u_directionalLightColor.value, "z", 0.0, 1.0, 0.01)
   .name("B");
 lightFolder.open();
+const bgFolder = gui.addFolder("Background");
+bgFolder
+  .add(props.uniforms.u_backgroundColor.value, "x", 0.0, 1.0, 0.01)
+  .name("R");
+bgFolder
+  .add(props.uniforms.u_backgroundColor.value, "y", 0.0, 1.0, 0.01)
+  .name("G");
+bgFolder
+  .add(props.uniforms.u_backgroundColor.value, "z", 0.0, 1.0, 0.01)
+  .name("B");
+bgFolder.open();
 const animationFolder = gui.addFolder("Animation");
 animationFolder.add(animation, "speed", 100, 400, 1).name("Speed");
 animationFolder.open();
@@ -177,9 +188,11 @@ onMounted(() => {
   // animation
   renderer.value.onBeforeRender(() => {
     for (let i = 0; i < sphereN; i++) {
-      // make reflected scene move with bubble
+      // adjust the center of bubble
       spheres.value[i].mesh.rotation.y =
-        spheres.value[i].mesh.position.x / 13.0;
+        -spheres.value[i].mesh.position.x / 12.0;
+      spheres.value[i].mesh.rotation.x =
+        spheres.value[i].mesh.position.y / 10.0;
       // move the bubble
       if (sphereProps.value[i].positiveDirection) {
         spheres.value[i].mesh.position.x +=
