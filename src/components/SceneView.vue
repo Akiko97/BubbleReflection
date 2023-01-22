@@ -14,14 +14,19 @@
       <!--  create a ThreeJS scene (TroisJS)  -->
       <Scene ref="scene">
         <!--  create a ThreeJS light (TroisJS)  -->
-        <PointLight :position="{ z: 3 }" />
-        <!--  create a ThreeJS sphere (TroisJS)  -->
+        <DirectionalLight color="#ffffff" :position="{ z: 3 }" />
+        <!--  create a ThreeJS plane mesh (TroisJS)  -->
+        <Plane ref="plane" :width="22" :height="20"></Plane>
+        <!--  create a ThreeJS sphere mesh (TroisJS)  -->
         <Sphere
-          ref="sphere"
-          :radius="2"
-          :widthSegments="40"
-          :heightSegments="40"
-          :rotation="{ y: Math.PI / 4, z: Math.PI / 4 }"
+          v-for="i in sphereProps"
+          :key="i.index"
+          :ref="spheresRef"
+          :radius="i.radius"
+          :widthSegments="256"
+          :heightSegments="256"
+          :rotation="i.rotation"
+          :position="i.position"
         >
           <ShaderMaterial :props="props" />
         </Sphere>
@@ -31,16 +36,67 @@
 </template>
 
 <script setup>
+// import
 import { onMounted, ref } from "vue";
 import * as three from "three";
 import * as dat from "dat.gui";
 import { shaders } from "@/shaders/bubble.shaders";
+import park from "@/images/park.jpg";
+
 const view = ref(null); // Get element view
 const renderer = ref(null); // Get ThreeJS render
 const scene = ref(null); // Get ThreeJS scene
 const camera = ref(null); // Get ThreeJS camera
-const sphere = ref(null); // Get ThreeJS sphere
+// Get ThreeJS sphere
+const sphereN = 10;
+const sphereProps = ref([]);
+const distance = (sphereA, sphereB) => {
+  return Math.sqrt(
+    Math.pow(sphereA.x - sphereB.x, 2) + Math.pow(sphereA.y - sphereB.y, 2)
+  );
+};
+for (let i = 0; i < sphereN; i++) {
+  const prop = {
+    index: i,
+    radius: (Math.random() + 1.0) / 2.0,
+    position: {
+      x: (Math.random() - 0.9) * 10,
+      y: (Math.random() - 0.5) * 10,
+      z: 0,
+    },
+    rotation: { x: 0, y: 0, z: 0 },
+    positiveDirection: Math.random() > 0.5 ? 1 : 0,
+  };
+  // Avoid bubble overlapping
+  for (let j = 0; j < i; j++) {
+    while (
+      distance(prop.position, sphereProps.value[j].position) <
+      prop.radius + sphereProps.value[j].radius
+    ) {
+      prop.position = {
+        x: (Math.random() - 0.9) * 10,
+        y: (Math.random() - 0.5) * 10,
+        z: 0,
+      };
+    }
+  }
+  // setup init rotation value
+  prop.rotation.y = prop.position.x / 25.0 + 0.001;
+  sphereProps.value.push(prop);
+}
+const spheres = ref([]);
+const spheresRef = (el) => {
+  if (el) {
+    spheres.value.push(el);
+  }
+};
+const plane = ref(null); // Get ThreeJS plane
 let aspect = 1; // Camera aspect
+// image texture
+const loader = new three.TextureLoader();
+const imageTexture = loader.load(park, () => {
+  //
+});
 // Material Props
 let props = {
   uniforms: {
@@ -59,15 +115,21 @@ let props = {
     u_materialColor: { type: "v3", value: new three.Vector3(1.0, 1.0, 1.0) },
     u_backgroundColor: {
       type: "v3",
-      value: new three.Vector3(0, 0, 0),
+      value: new three.Vector3(0.45, 0.45, 0.45),
     },
     u_surfaceThickness: { type: "f", value: 600.0 },
     u_refractiveIndex: { type: "f", value: 1.33 },
+    u_texture: { type: "t", value: imageTexture },
+    u_alpha: { value: 0.8 },
   },
   vertexShader: shaders.vert,
   fragmentShader: shaders.frag,
   wireframe: false,
+  transparent: true,
+  side: three.DoubleSide,
 };
+// Animation
+const animation = { speed: 300 };
 // Setup DatGUI
 const gui = new dat.GUI();
 const bubbleFolder = gui.addFolder("Bubble");
@@ -77,6 +139,7 @@ bubbleFolder
 bubbleFolder
   .add(props.uniforms.u_refractiveIndex, "value", 1.0, 10.0, 0.01)
   .name("Refractive Index");
+bubbleFolder.add(props.uniforms.u_alpha, "value", 0.0, 1.0, 0.01).name("Alpha");
 bubbleFolder.open();
 const lightFolder = gui.addFolder("Light");
 lightFolder
@@ -98,16 +161,45 @@ lightFolder
   .add(props.uniforms.u_directionalLightColor.value, "z", 0.0, 1.0, 0.01)
   .name("B");
 lightFolder.open();
+const animationFolder = gui.addFolder("Animation");
+animationFolder.add(animation, "speed", 100, 400, 1).name("Speed");
+animationFolder.open();
 // Page Mounted
 onMounted(() => {
   // Update camera aspect with width&height of view
   aspect =
     window.getComputedStyle(view.value).width /
     window.getComputedStyle(view.value).height;
+  // setup plane
+  plane.value.mesh.material = new three.MeshStandardMaterial({
+    map: imageTexture,
+  });
   // animation
   renderer.value.onBeforeRender(() => {
-    const mesh = sphere.value.mesh;
-    mesh.rotation.x += 0.01;
+    for (let i = 0; i < sphereN; i++) {
+      // make reflected scene move with bubble
+      spheres.value[i].mesh.rotation.y =
+        spheres.value[i].mesh.position.x / 13.0;
+      // move the bubble
+      if (sphereProps.value[i].positiveDirection) {
+        spheres.value[i].mesh.position.x +=
+          Math.random() / (500.0 - animation.speed);
+      } else {
+        spheres.value[i].mesh.position.x -=
+          Math.random() / (500.0 - animation.speed);
+      }
+      spheres.value[i].mesh.position.y +=
+        Math.random() / (500.0 - animation.speed);
+      // if bubble run out of view, let bubble back to view
+      if (spheres.value[i].mesh.position.x < -13) {
+        spheres.value[i].mesh.position.x = 13;
+      } else if (spheres.value[i].mesh.position.x > 13) {
+        spheres.value[i].mesh.position.x = -13;
+      }
+      if (spheres.value[i].mesh.position.y > 7) {
+        spheres.value[i].mesh.position.y = -7;
+      }
+    }
   });
 });
 </script>
