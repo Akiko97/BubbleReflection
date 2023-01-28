@@ -68,6 +68,8 @@ let props = {
   uniforms: {
     u_texture: { type: "t", value: imageTexture },
     u_alpha: { value: 0.8 },
+    u_center: { value: 0.25 },
+    u_posOffset: { type: "v2", value: new three.Vector2(0.0, 0.0) },
   },
   vertexShader: shaders.vert,
   fragmentShader: shaders.frag,
@@ -77,9 +79,20 @@ let props = {
 };
 // Setup DatGUI
 const gui = new dat.GUI();
-const bubbleFolder = gui.addFolder("Bubble");
-bubbleFolder.add(props.uniforms.u_alpha, "value", 0.0, 1.0, 0.01).name("Alpha");
-bubbleFolder.open();
+const reflectionFolder = gui.addFolder("Reflection");
+reflectionFolder
+  .add(props.uniforms.u_alpha, "value", 0.0, 1.0, 0.01)
+  .name("Alpha");
+reflectionFolder
+  .add(props.uniforms.u_center, "value", 0.0, 1.0, 0.01)
+  .name("Center");
+reflectionFolder
+  .add(props.uniforms.u_posOffset.value, "x", -1.0, 1.0, 0.01)
+  .name("PosOffsetU");
+reflectionFolder
+  .add(props.uniforms.u_posOffset.value, "y", -1.0, 1.0, 0.01)
+  .name("PosOffsetV");
+reflectionFolder.open();
 // Page Mounted
 onMounted(() => {
   // Update camera aspect with width&height of view
