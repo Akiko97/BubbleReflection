@@ -21,9 +21,10 @@ const vec3 wavelengths = vec3(620.0, 530.0, 485.0); // nm
 vec3 getInterferenceColor() {
   vec3 interferenceColor = u_directionalLightColor;
 
-  float cos_theta = max(dot(normalize(u_directionalLightPos), v_mvNormal), dot(normalize(u_directionalLightPos), -v_mvNormal) );
-  float sin_phi_squared = (1.0 - pow(cos_theta, 2.0)) / pow(u_refractiveIndex, 2.0);
-  float distanceDiff = (2.0 * u_surfaceThickness * sqrt(sin_phi_squared)) / sqrt(1.0 - sin_phi_squared);
+  float cos_theta = dot(normalize(directionalLightPos), mvNormal);
+  float sin_theta = sqrt(1.0 - pow(cos_theta, 2.0));
+  float sin_phi = sin_theta / refractiveIndex;
+  float distanceDiff = 2.0 * surfaceThickness * (1.0 - sin_theta*sin_phi) / sqrt(1.0 - pow(sin_phi, 2.0));
 
   interferenceColor *= 0.5 * sqrt(2.0 + 2.0 * cos(2.0 * PI * distanceDiff / wavelengths));
 
