@@ -5522,22 +5522,24 @@ version 0.6.9
 varying vec2 vUv;
 uniform sampler2D u_texture; // Landscape
 uniform float u_alpha; // Alpha
+uniform float u_center;
+uniform vec2 u_posOffset;
 void main() {
   vec2 uv = vUv;
   // left side of bubble
-  if( uv.x < 0.25 )
-    uv = vec2( 0.25 - uv.x, ( 0.6 - uv.y ) * 2.0 ); // flip side up and move to the bottom left.
+  if( uv.x < u_center )
+    uv = vec2( u_center - uv.x, ( 0.6 - uv.y ) * 2.0 ); // flip side up and move to the bottom left.
   // right side of bubble
   else
-    uv = vec2( uv.x, ( uv.y - 0.4 ) * 2.0 ); // move to the top right.
+    uv = vec2( uv.x - u_center, ( uv.y - 0.4 ) * 2.0 ); // move to the top right.
   uv = vec2( fract( uv.x * 4.0 ), uv.y );
   // distortion
   vec2 uvOffset = 0.01 * vec2( cos( uv.y * 20. ), sin( uv.x * 20. ) );
-  vec3 color = texture2D( u_texture, uv + uvOffset ).rgb;
+  vec3 color = texture2D( u_texture, uv + uvOffset + u_posOffset  ).rgb;
   gl_FragColor = vec4( color, u_alpha );
 }`,vert:`
 varying vec2 vUv;
 void main() {
   vUv = uv;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}`},rM="/BubbleReflection/assets/park-5a6a4cf5.jpg";const sM=(i,e)=>{const t=i.__vccOpts||i;for(const[n,r]of e)t[n]=r;return t},oM={__name:"SceneView",setup(i){const e=gi(null),t=gi(null),n=gi(null),r=gi(null),s={radius:3,position:{x:0,y:0,z:0},rotation:{x:0,y:0,z:0}},o=gi(),a=gi(null);let l=1;const u=new $n().load(rM,()=>{console.log("texture loaded")});let h={uniforms:{u_texture:{type:"t",value:u},u_alpha:{value:.8}},vertexShader:a3.vert,fragmentShader:a3.frag,wireframe:!1,transparent:!0,side:pn};const d=new iM().addFolder("Bubble");return d.add(h.uniforms.u_alpha,"value",0,1,.01).name("Alpha"),d.open(),B3(()=>{l=window.getComputedStyle(e.value).width/window.getComputedStyle(e.value).height,a.value.mesh.material=new Ii({map:u})}),(g,v)=>{const _=hi("Camera"),p=hi("DirectionalLight"),m=hi("Plane"),x=hi("ShaderMaterial"),y=hi("Sphere"),w=hi("Scene"),T=hi("Renderer");return Q3(),Z3("div",{class:"view",ref_key:"view",ref:e},[K0(T,{ref_key:"renderer",ref:t,resize:"true"},{default:pa(()=>[K0(_,{ref_key:"camera",ref:r,position:{z:10},fov:60,aspect:v1(l),near:.1,far:1e3},null,8,["aspect","near"]),K0(w,{ref_key:"scene",ref:n},{default:pa(()=>[K0(p,{color:"#ffffff",position:{z:3}}),K0(m,{ref_key:"plane",ref:a,width:22,height:20},null,512),K0(y,{ref:o.value,radius:s.radius,widthSegments:256,heightSegments:256,rotation:s.rotation,position:s.position},{default:pa(()=>[K0(x,{props:v1(h)},null,8,["props"])]),_:1},8,["radius","rotation","position"])]),_:1},512)]),_:1},512)],512)}}},aM=sM(oM,[["__scopeId","data-v-11fc9061"]]),lM={style:{height:"100%"}},cM={__name:"App",setup(i){return(e,t)=>(Q3(),Z3("div",lM,[K0(aM)]))}};const ef=D8(cM);ef.use(Nw);ef.mount("#app");
+}`},rM="/BubbleReflection/assets/park-5a6a4cf5.jpg";const sM=(i,e)=>{const t=i.__vccOpts||i;for(const[n,r]of e)t[n]=r;return t},oM={__name:"SceneView",setup(i){const e=gi(null),t=gi(null),n=gi(null),r=gi(null),s={radius:3,position:{x:0,y:0,z:0},rotation:{x:0,y:0,z:0}},o=gi(),a=gi(null);let l=1;const u=new $n().load(rM,()=>{console.log("texture loaded")});let h={uniforms:{u_texture:{type:"t",value:u},u_alpha:{value:.8},u_center:{value:.25},u_posOffset:{type:"v2",value:new J(0,0)}},vertexShader:a3.vert,fragmentShader:a3.frag,wireframe:!1,transparent:!0,side:pn};const d=new iM().addFolder("Reflection");return d.add(h.uniforms.u_alpha,"value",0,1,.01).name("Alpha"),d.add(h.uniforms.u_center,"value",0,1,.01).name("Center"),d.add(h.uniforms.u_posOffset.value,"x",-1,1,.01).name("PosOffsetU"),d.add(h.uniforms.u_posOffset.value,"y",-1,1,.01).name("PosOffsetV"),d.open(),B3(()=>{l=window.getComputedStyle(e.value).width/window.getComputedStyle(e.value).height,a.value.mesh.material=new Ii({map:u})}),(g,v)=>{const _=hi("Camera"),p=hi("DirectionalLight"),m=hi("Plane"),x=hi("ShaderMaterial"),y=hi("Sphere"),w=hi("Scene"),T=hi("Renderer");return Q3(),Z3("div",{class:"view",ref_key:"view",ref:e},[K0(T,{ref_key:"renderer",ref:t,resize:"true"},{default:pa(()=>[K0(_,{ref_key:"camera",ref:r,position:{z:10},fov:60,aspect:v1(l),near:.1,far:1e3},null,8,["aspect","near"]),K0(w,{ref_key:"scene",ref:n},{default:pa(()=>[K0(p,{color:"#ffffff",position:{z:3}}),K0(m,{ref_key:"plane",ref:a,width:22,height:20},null,512),K0(y,{ref:o.value,radius:s.radius,widthSegments:256,heightSegments:256,rotation:s.rotation,position:s.position},{default:pa(()=>[K0(x,{props:v1(h)},null,8,["props"])]),_:1},8,["radius","rotation","position"])]),_:1},512)]),_:1},512)],512)}}},aM=sM(oM,[["__scopeId","data-v-3dab6ef5"]]),lM={style:{height:"100%"}},cM={__name:"App",setup(i){return(e,t)=>(Q3(),Z3("div",lM,[K0(aM)]))}};const ef=D8(cM);ef.use(Nw);ef.mount("#app");
