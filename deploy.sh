@@ -5,5 +5,5 @@ cd dist
 git init
 git add -A
 git commit -m 'deploy'
-git push -f git@github.com:Akiko97/Bubble.git main:gh-pages
+git push -f git@github.com:Akiko97/BubbleReflection.git main:gh-pages
 cd -
